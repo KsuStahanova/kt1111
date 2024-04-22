@@ -1,0 +1,154 @@
+Javapublic class Order {
+    private int orderId;
+    private double totalAmount;
+    private Date orderDate;
+
+    // Связи с другими классами
+    @OneToOne(mappedBy = "order")
+    private Invoice invoice;
+
+    @OneToOne(mappedBy = "order")
+    private Waybill waybill;
+}
+
+Класс счета
+Javapublic class Invoice {
+    private int invoiceId;
+    private double amount;
+    private Date invoiceDate;
+
+    // Связь с классом заказа
+    @OneToOne
+    private Order order;
+}
+
+Класс документа об оплате
+Javapublic class PaymentDocument {
+    private int paymentId;
+    private double paymentAmount;
+    private Date paymentDate;
+
+    // Связь с классом счета
+    @OneToOne
+    private Invoice invoice;
+}
+
+Класс накладной
+Javapublic class Waybill {
+    private int waybillId;
+    private String products;
+    private Date shippingDate;
+
+    // Связь с классом заказа
+    @OneToOne
+    private Order order;
+}
+
+Интерфейс DocumentService
+Javapublic interface DocumentService {
+    public void createOrder(Order order, Invoice invoice, Waybill waybill);
+    public void createInvoice(Invoice invoice, Order order);
+    public void createPaymentDocument(PaymentDocument paymentDocument, Invoice invoice);
+    public void createWaybill(Waybill waybill, Order order);
+    public void displayAllDocuments();
+}
+
+Реализация DocumentService
+Java@Service
+public class DocumentServiceImpl implements DocumentService {
+    private List<Object> documents = new ArrayList<>();
+
+    public void createOrder(Order order, Invoice invoice, Waybill waybill) {
+        documents.add(order);
+        documents.add(invoice);
+        documents.add(waybill);
+    }
+
+    public void createInvoice(Invoice invoice, Order order) {
+        documents.add(invoice);
+        documents.add(order);
+    }
+
+    public void createPaymentDocument(PaymentDocument paymentDocument, Invoice invoice) {
+        documents.add(paymentDocument);
+        documents.add(invoice);
+    }
+
+    public void createWaybill(Waybill waybill, Order order) {
+        documents.add(waybill);
+        documents.add(order);
+    }
+
+    public void displayAllDocuments() {
+        System.out.println("Заказы: " + documents.stream().filter(d -> d instanceof Order).toList());
+        System.out.println("Счета: " + documents.stream().filter(d -> d instanceof Invoice).toList());
+        System.out.println("Документы оплаты: " + documents.stream().filter(d -> d instanceof PaymentDocument).toList());
+        System.out.println("Накладные: " + documents.stream().filter(d -> d instanceof Waybill).toList());
+    }
+}
+
+MainApp
+Java@SpringBootApplication
+public class MainApp {
+
+    @Autowired
+    private DocumentService documentService;
+
+    public static void main(String[] args) {
+        SpringApplication.run(MainApp.class, args);
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+       
+        Order order = new Order();
+        Invoice invoice = new Invoice();
+        Waybill waybill = new Waybill();
+
+        documentService.createOrder(order, invoice, waybill);
+        documentService.displayAllDocuments();
+    }
+}
+
+
+
+классов моделей
+@Entity
+public class Order {
+}
+
+@Entity
+public class Invoice {
+
+}
+
+@Entity
+public class PaymentDocument {
+  
+}
+
+@Entity
+public class Waybill {
+
+}
+
+@SpringBootApplication
+public class MainApp implements CommandLineRunner {
+
+    @Autowired
+    private DocumentService documentService;
+
+    public static void main(String[] args) {
+        SpringApplication.run(MainApp.class, args);
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        Order order = new Order();
+        Invoice invoice = new Invoice();
+        Waybill waybill = new Waybill();
+
+        documentService.createOrder(order, invoice, waybill);
+        documentService.displayAllDocuments();
+    }
+}
